@@ -1,0 +1,39 @@
+x-templates:
+  default-variables: &default-variables
+    TZ: Europe/Berlin
+  default-service: &default-service
+    restart: unless-stopped
+    tty: true
+    stdin_open: true
+    init: true
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    environment:
+      <<: *default-variables
+  as-current-user: &as-current-user
+    user: ${UID:-1000}:${GID:-1000}
+
+services:
+  db:
+    <<: *default-service
+    image: postgres:13-alpine
+    container_name: rust-web-app
+    environment:
+      <<: *default-variables
+      POSTGRES_USER: app
+      POSTGRES_PASSWORD: app
+      POSTGRES_DB: app
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./:/app:ro
+    networks:
+      - app
+networks:
+  app:
+    driver: bridge
+
+volumes:
+  pgdata:
+    driver: local
