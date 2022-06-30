@@ -8,6 +8,12 @@ pub struct UserRepository {
     pub connection: Pool<Postgres>,
 }
 
+impl UserRepository {
+    pub fn create(connection: Pool<Postgres>) -> Self {
+        UserRepository { connection }
+    }
+}
+
 #[async_trait]
 impl UserRepositoryTrait for UserRepository {
     async fn get_by_id(&self, uuid: String) -> Result<User, Error> {

@@ -13,7 +13,7 @@ async fn main() -> Result<(), sqlx::Error> {
         .connect("postgres://app:app@localhost/app?sslmode=disable")
         .await?;
 
-    let user_repo = UserRepository { connection: pool };
+    let user_repo = UserRepository::create(pool);
     println!("{:?}", user_repo.get_all().await?);
     println!(
         "{:?}",
