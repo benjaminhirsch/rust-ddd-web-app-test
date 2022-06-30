@@ -1,4 +1,4 @@
-use sqlx::types::time::{PrimitiveDateTime};
+use sqlx::types::time::PrimitiveDateTime;
 use uuid::Uuid;
 
 #[derive(Debug, Clone, sqlx::FromRow)]
@@ -7,5 +7,5 @@ pub struct User {
     pub email: String,
     pub password: String,
     pub created_at: PrimitiveDateTime,
-    pub updated_at: PrimitiveDateTime
+    pub updated_at: PrimitiveDateTime,
 }

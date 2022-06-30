@@ -15,6 +15,12 @@ async fn main() -> Result<(), sqlx::Error> {
 
     let user_repo = UserRepository { connection: pool };
     println!("{:?}", user_repo.get_all().await?);
+    println!(
+        "{:?}",
+        user_repo
+            .get_by_id("4fee8e7a-f840-11ec-b939-0242ac120002".to_string())
+            .await?
+    );
 
     Ok(())
 }
