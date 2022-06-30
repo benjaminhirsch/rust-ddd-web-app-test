@@ -12,7 +12,7 @@ pub struct UserRepository {
 impl UserRepositoryTrait for UserRepository {
     async fn get_by_id(&self, uuid: String) -> Result<User, Error> {
         sqlx::query_as::<_, User>("select * from users where id::text = $1")
-            .bind(&uuid)
+            .bind(uuid)
             .fetch_one(&self.connection)
             .await
     }
