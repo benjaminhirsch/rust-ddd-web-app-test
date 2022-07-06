@@ -1,26 +1,37 @@
 use crate::domain::entity::user::User;
 use crate::domain::repository::user::UserRepositoryTrait;
+use crate::infrastructure::handler::home::index;
 use crate::infrastructure::repository::user::UserRepository;
+use actix_web::{middleware::Logger, web, App, HttpServer};
 use sqlx::postgres::PgPoolOptions;
 
 mod domain;
 mod infrastructure;
 
-#[async_std::main]
-async fn main() -> Result<(), sqlx::Error> {
+#[actix_web::main]
+async fn main() -> std::io::Result<()> {
     let pool = PgPoolOptions::new()
         .max_connections(5)
         .connect("postgres://app:app@localhost/app?sslmode=disable")
-        .await?;
+        .await;
 
-    let user_repo = UserRepository::create(pool);
-    println!("{:?}", user_repo.get_all().await?);
+    let user_repo = UserRepository::create(pool.unwrap());
+    println!("{:?}", user_repo.get_all().await);
     println!(
         "{:?}",
         user_repo
             .get_by_id("4fee8e7a-f840-11ec-b939-0242ac120002".to_string())
-            .await?
+            .await
     );
 
-    Ok(())
+    env_logger::init_from_env(env_logger::Env::new().default_filter_or("info"));
+
+    HttpServer::new(|| {
+        App::new()
+            .wrap(Logger::default())
+            .route("/", web::get().to(index))
+    })
+    .bind(("127.0.0.01", 8080))?
+    .run()
+    .await
 }
