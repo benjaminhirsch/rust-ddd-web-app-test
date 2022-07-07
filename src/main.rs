@@ -15,11 +15,20 @@ async fn main() -> std::io::Result<()> {
         .connect("postgres://app:app@localhost/app?sslmode=disable")
         .await;
 
-    let user_repo = UserRepository::create(pool.unwrap());
-    println!("{:?}", user_repo.get_all().await);
+    let user_repo1 = UserRepository::new(pool.as_ref().unwrap());
+    let user_repo2 = UserRepository::new(pool.as_ref().unwrap());
+
+    println!("{:?}", user_repo1.get_all().await);
+    println!("{:?}", user_repo2.get_all().await);
     println!(
         "{:?}",
-        user_repo
+        user_repo1
+            .get_by_id("4fee8e7a-f840-11ec-b939-0242ac120002".to_string())
+            .await
+    );
+    println!(
+        "{:?}",
+        user_repo2
             .get_by_id("4fee8e7a-f840-11ec-b939-0242ac120002".to_string())
             .await
     );
