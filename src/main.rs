@@ -1,42 +1,40 @@
+use crate::config::Config;
 use crate::domain::entity::user::User;
-use crate::domain::repository::user::UserRepositoryTrait;
 use crate::infrastructure::handler::home::index;
 use crate::infrastructure::repository::user::UserRepository;
 use actix_session::storage::CookieSessionStore;
 use actix_session::SessionMiddleware;
 use actix_web::cookie::Key;
 use actix_web::{middleware::Logger, web, App, HttpServer};
+use color_eyre::Result;
 use sqlx::postgres::PgPoolOptions;
+use tracing::{info, instrument};
 
+mod config;
 mod domain;
 mod infrastructure;
 
 #[actix_web::main]
-async fn main() -> std::io::Result<()> {
+#[instrument]
+async fn main() -> Result<()> {
+    let config = Config::from_env().expect("Server configuration");
+
     let pool = PgPoolOptions::new()
         .max_connections(5)
-        .connect("postgres://app:app@localhost/app?sslmode=disable")
+        .connect(
+            config
+                .get_string("database_url")
+                .expect("Missing database url")
+                .as_str(),
+        )
         .await;
 
-    let user_repo1 = UserRepository::new(pool.as_ref().unwrap());
-    let user_repo2 = UserRepository::new(pool.as_ref().unwrap());
+    let _ = UserRepository::new(pool.as_ref().unwrap());
 
-    println!("{:?}", user_repo1.get_all().await);
-    println!("{:?}", user_repo2.get_all().await);
-    println!(
-        "{:?}",
-        user_repo1
-            .get_by_id("4fee8e7a-f840-11ec-b939-0242ac120002".to_string())
-            .await
-    );
-    println!(
-        "{:?}",
-        user_repo2
-            .get_by_id("4fee8e7a-f840-11ec-b939-0242ac120002".to_string())
-            .await
-    );
+    let host = config.get_string("host").expect("Missing host name");
+    let port = config.get_int("port").expect("Missing port");
 
-    env_logger::init_from_env(env_logger::Env::new().default_filter_or("info"));
+    info!("Starting server at http://{}:{}/", &host, &port);
 
     HttpServer::new(|| {
         App::new()
@@ -48,7 +46,8 @@ async fn main() -> std::io::Result<()> {
             )
             .route("/", web::get().to(index))
     })
-    .bind(("127.0.0.01", 8080))?
+    .bind(format!("{}:{}", host, port))?
     .run()
-    .await
+    .await?;
+    Ok(())
 }
