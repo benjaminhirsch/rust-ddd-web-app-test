@@ -2,6 +2,9 @@ use crate::domain::entity::user::User;
 use crate::domain::repository::user::UserRepositoryTrait;
 use crate::infrastructure::handler::home::index;
 use crate::infrastructure::repository::user::UserRepository;
+use actix_session::storage::CookieSessionStore;
+use actix_session::SessionMiddleware;
+use actix_web::cookie::Key;
 use actix_web::{middleware::Logger, web, App, HttpServer};
 use sqlx::postgres::PgPoolOptions;
 
@@ -38,6 +41,11 @@ async fn main() -> std::io::Result<()> {
     HttpServer::new(|| {
         App::new()
             .wrap(Logger::default())
+            .wrap(
+                SessionMiddleware::builder(CookieSessionStore::default(), Key::from(&[0; 64]))
+                    .cookie_secure(false)
+                    .build(),
+            )
             .route("/", web::get().to(index))
     })
     .bind(("127.0.0.01", 8080))?
