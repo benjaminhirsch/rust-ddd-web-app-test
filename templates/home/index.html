@@ -2,4 +2,9 @@
 {% block content %}
 <h1>Index</h1>
 <p>Hello, {{ name }}!</p>
+{% if counter == 1 %}
+It's you first visit!
+{% else %}
+You've already visited us {{ counter }} times!
+{% endif %}
 {% endblock %}

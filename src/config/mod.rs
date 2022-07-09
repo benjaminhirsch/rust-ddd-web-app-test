@@ -10,6 +10,8 @@ pub struct Config {
     pub host: String,
     pub port: i64,
     pub database_url: String,
+    pub cookie_name: String,
+    pub cookie_secure: bool,
 }
 
 impl Config {

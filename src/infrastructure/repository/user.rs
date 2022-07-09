@@ -1,5 +1,6 @@
 use crate::domain::repository::user::UserRepositoryTrait;
 use async_trait::async_trait;
+use color_eyre::Result;
 use sqlx::{Error, Pool, Postgres};
 
 use crate::User;

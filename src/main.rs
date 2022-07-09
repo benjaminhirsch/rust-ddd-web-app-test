@@ -4,7 +4,7 @@ use crate::infrastructure::handler::home::index;
 use crate::infrastructure::repository::user::UserRepository;
 use actix_session::storage::CookieSessionStore;
 use actix_session::SessionMiddleware;
-use actix_web::cookie::Key;
+use actix_web::cookie::{Key, SameSite};
 use actix_web::{middleware::Logger, web, App, HttpServer};
 use color_eyre::Result;
 use sqlx::postgres::PgPoolOptions;
@@ -36,12 +36,24 @@ async fn main() -> Result<()> {
 
     info!("Starting server at http://{}:{}/", &host, &port);
 
-    HttpServer::new(|| {
+    info!("{:?}", &[0; 64]);
+
+    HttpServer::new(move || {
         App::new()
             .wrap(Logger::default())
             .wrap(
                 SessionMiddleware::builder(CookieSessionStore::default(), Key::from(&[0; 64]))
-                    .cookie_secure(false)
+                    .cookie_name(
+                        config
+                            .get_string("cookie_name")
+                            .expect("Missing cookie name"),
+                    )
+                    .cookie_same_site(SameSite::Lax)
+                    .cookie_secure(
+                        config
+                            .get_bool("cookie_secure")
+                            .expect("Missing cookie secure"),
+                    )
                     .build(),
             )
             .route("/", web::get().to(index))
